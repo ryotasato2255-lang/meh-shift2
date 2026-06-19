@@ -256,7 +256,7 @@ var MH_BADGE={浜田山:'bh',武蔵野:'bm',どちらでも:'bb',待機不可:'b
 var MH_LABEL={浜田山:'🏠浜田山',武蔵野:'🏡武蔵野',どちらでも:'🔄どちらでも',待機不可:'⛔待機不可',休日:'🌴休日'};
 var db,allData={},selDate=null,selName=null,selMH=null,selCopyDate=null;
 
-function toKey(d){return d.toISOString().slice(0,10);}
+function toKey(d){var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}
 function isHol(d){return HOLIDAYS.indexOf(toKey(d))>=0;}
 function isElig(d){var w=d.getDay();return w===0||w===6||isHol(d);}
 function fmtDate(d){return(d.getMonth()+1)+'/'+(d.getDate())+'('+WD[d.getDay()]+')'+(isHol(d)?'🎌':'');}
