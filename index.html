@@ -420,7 +420,7 @@ function checkGaps(key){
 function renderView(){
   var dates=get4Dates(),c=document.getElementById('viewContent');c.innerHTML='';
   dates.forEach(function(d){
-    var key=toKey(d),dd=allData[key]||{};
+    var key=toKey(d),dd=allData[key]||{};d=new Date(key+"T12:00:00");
     var gaps=checkGaps(key);
     if(gaps&&gaps.length){
       var a=document.createElement('div');a.className='alert-box';
