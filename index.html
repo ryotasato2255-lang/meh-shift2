@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>モデルハウスシフト</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#2d7a4f;
+  --green2:#3a9460;
+  --green-light:#e8f5ee;
+  --green-pale:#f2faf5;
+  --green-mid:#b2ddc4;
+  --accent:#f0a500;
+  --h:#1a6bb5;--hl:#e8f2fc;
+  --m:#2d7a4f;--ml:#e8f5ee;
+  --b:#c47a00;--bl:#fff8e6;
+  --n:#c0392b;--nl:#fdecea;
+  --o:#7f8c8d;--ol:#f4f5f5;
+  --border:#d4ead9;
+  --bg:#f5faf7;
+  --card:#ffffff;
+  --text:#1a2e22;
+  --muted:#6b8f77;
+  --r:14px;--rs:9px;
+  --sh:0 2px 12px rgba(45,122,79,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+/* ===== LOGIN ===== */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(160deg,#1e5c38 0%,#2d7a4f 60%,#3a9460 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;padding:28px}
+.lg-leaf{font-size:48px;margin-bottom:12px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2))}
+.lg-logo{color:rgba(255,255,255,.6);font-size:11px;letter-spacing:3px;margin-bottom:6px;text-transform:uppercase}
+.lg-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:.5px}
+.lg-sub{color:rgba(255,255,255,.55);font-size:12px;margin-bottom:36px}
+.lg-box{background:rgba(255,255,255,.97);border-radius:20px;padding:26px 22px;width:100%;max-width:310px;box-shadow:0 8px 32px rgba(0,0,0,0.18)}
+.lg-label{font-size:11px;color:var(--muted);margin-bottom:10px;display:block;font-weight:600;letter-spacing:.5px}
+.pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:18px}
+.pin-d{width:50px;height:58px;border:2px solid var(--border);border-radius:12px;font-size:24px;font-weight:700;text-align:center;color:var(--text);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
+.pin-d:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,122,79,0.15)}
+.lg-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:background .2s}
+.lg-btn:active{background:var(--green2)}
+.lg-err{color:#c0392b;font-size:12px;text-align:center;margin-top:8px;min-height:16px}
+
+/* ===== HEADER ===== */
+#app{display:none}
+.hdr{background:var(--green);padding:14px 16px 12px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-icon{font-size:22px}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;letter-spacing:.3px}
+.hdr-sub{color:rgba(255,255,255,.6);font-size:10px;margin-top:1px}
+.sync-pill{background:rgba(255,255,255,.15);color:#fff;font-size:10px;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:5px}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:#69f0ae;flex-shrink:0}
+.sync-dot.syncing{background:#ffca28;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ===== PAGE ===== */
+.page{padding:14px 12px}
+
+/* ===== SECTION ===== */
+.sec-wrap{margin-bottom:16px}
+.sec-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--green);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;padding:0 2px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--green-mid);opacity:.5}
+.card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:var(--sh);border:1px solid rgba(45,122,79,0.07)}
+.card+.card{margin-top:8px}
+
+/* ===== FIELD LABEL ===== */
+.flabel{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+
+/* ===== DATE CHIPS ===== */
+.date-scroll{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+.date-scroll::-webkit-scrollbar{display:none}
+.date-chip{flex-shrink:0;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;transition:all .18s}
+.date-chip.active{background:var(--green);border-color:var(--green);color:#fff}
+
+/* ===== NAME GRID ===== */
+.name-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.name-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-size:13px;color:var(--text);text-align:center;font-weight:500;transition:all .15s}
+.name-btn:active{transform:scale(.96)}
+.name-btn.selected{background:var(--green-light);border-color:var(--green);color:var(--green);font-weight:700}
+
+/* ===== MH BUTTONS ===== */
+.mh-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mh-btn{padding:13px 6px;border:1.5px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;font-size:13px;color:var(--text);text-align:center;line-height:1.5;font-weight:500;transition:all .15s}
+.mh-btn.full{grid-column:1/-1;padding:11px}
+.mh-btn:active{transform:scale(.97)}
+.mh-btn.sel-h{background:var(--hl);border-color:var(--h);color:var(--h);font-weight:700}
+.mh-btn.sel-m{background:var(--ml);border-color:var(--m);color:var(--m);font-weight:700}
+.mh-btn.sel-b{background:var(--bl);border-color:var(--b);color:var(--b);font-weight:700}
+.mh-btn.sel-n{background:var(--nl);border-color:var(--n);color:var(--n);font-weight:700}
+.mh-btn.sel-o{background:var(--ol);border-color:var(--o);color:var(--o);font-weight:700}
+
+/* ===== TIME ===== */
+.time-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.time-row select{flex:1;padding:10px 8px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:13px;-webkit-appearance:none;font-family:inherit}
+.time-sep{color:var(--muted);font-size:13px;font-weight:600}
+textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:13px;color:var(--text);background:#fff;resize:none;height:58px;font-family:inherit;transition:border-color .2s}
+textarea:focus{outline:none;border-color:var(--green)}
+textarea::placeholder{color:#b2c9bc}
+
+/* ===== SAVE ===== */
+.save-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;letter-spacing:.3px;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.save-btn:active{background:var(--green2)}
+
+/* ===== ALERT ===== */
+.alert-box{background:#fffbe6;border:1.5px solid #f5c842;border-radius:12px;padding:11px 13px;margin-bottom:10px;font-size:12px;color:#6b5000}
+.alert-title{font-weight:700;color:#c47a00;margin-bottom:3px;font-size:13px;display:flex;align-items:center;gap:5px}
+
+/* ===== DAY CARD ===== */
+.day-card{background:var(--card);border-radius:var(--r);margin-bottom:10px;box-shadow:var(--sh);border:1px solid rgba(45,122,79,0.07);overflow:hidden}
+.day-hdr{background:var(--green-pale);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.day-hdr-date{font-size:13px;font-weight:700;color:var(--green)}
+.day-hdr-count{font-size:11px;color:var(--muted);background:var(--green-light);padding:2px 8px;border-radius:10px;font-weight:600}
+.day-body{padding:0 14px}
+.m-row{padding:9px 0;border-bottom:1px solid #f0f7f3;display:flex;align-items:flex-start;gap:10px}
+.m-row:last-child{border-bottom:none}
+.m-name{font-size:13px;font-weight:700;min-width:42px;padding-top:2px;color:var(--text)}
+.m-info{flex:1}
+.m-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:600}
+.bh{background:var(--hl);color:var(--h)}
+.bm{background:var(--ml);color:var(--m)}
+.bb{background:var(--bl);color:var(--b)}
+.bn{background:var(--nl);color:var(--n)}
+.bo{background:var(--ol);color:var(--o)}
+.bx{background:#f3f5f4;color:#aaa}
+.m-time{font-size:11px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:3px}
+.m-note{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic}
+.del-btn{background:none;border:none;cursor:pointer;color:#c8ddd0;font-size:18px;padding:3px 2px;flex-shrink:0;transition:color .15s;line-height:1}
+.del-btn:active{color:var(--n)}
+.unreg-div{font-size:11px;color:#b2c9bc;padding:7px 0 3px;border-top:1px dashed #e0ede5;margin-top:3px;font-weight:600;letter-spacing:.3px}
+
+/* ===== COPY ===== */
+.copy-preview{background:var(--green-pale);border:1.5px solid var(--border);border-radius:12px;padding:13px;font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.9;font-family:inherit;margin-bottom:10px}
+.copy-btn{width:100%;padding:13px;border:2px solid var(--green);border-radius:12px;background:#fff;color:var(--green);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .18s}
+.copy-btn:active{background:var(--green-light)}
+
+/* ===== DIVIDER ===== */
+.divider{display:flex;align-items:center;gap:8px;margin:20px 0 10px;padding:0 2px}
+.divider-text{font-size:11px;font-weight:700;color:var(--green);letter-spacing:.8px;white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--green-mid);opacity:.4}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1e5c38;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lg-leaf">🌿</div>
+  <div class="lg-logo">Mitsubishi Estate Home</div>
+  <div class="lg-title">モデルハウスシフト</div>
+  <div class="lg-sub">第一グループ</div>
+  <div class="lg-box">
+    <span class="lg-label">🔒 PINコードを入力</span>
+    <div class="pin-row">
+      <input class="pin-d" type="tel" maxlength="1" id="p0" inputmode="numeric">
+      <input class="pin-d" type="tel" maxlength="1" id="p1" inputmode="numeric">
+      <input class="pin-d" type="tel" maxlength="1" id="p2" inputmode="numeric">
+      <input class="pin-d" type="tel" maxlength="1" id="p3" inputmode="numeric">
+    </div>
+    <button class="lg-btn" id="loginBtn">ログイン</button>
+    <div class="lg-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-icon">🌿</div>
+      <div>
+        <div class="hdr-title">モデルハウスシフト</div>
+        <div class="hdr-sub">三菱地所ホーム 第一グループ</div>
+      </div>
+    </div>
+    <div class="sync-pill"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">接続中</span></div>
+  </div>
+
+  <div class="page">
+
+    <!-- 登録 -->
+    <div class="sec-wrap">
+      <div class="sec-label">✏️ シフト登録</div>
+      <div class="card">
+        <div class="flabel">📅 日程</div>
+        <div class="date-scroll" id="regDateTabs"></div>
+      </div>
+      <div class="card">
+        <div class="flabel">👤 名前</div>
+        <div class="name-grid" id="nameGrid"></div>
+      </div>
+      <div class="card">
+        <div class="flabel">🏠 モデルハウス</div>
+        <div class="mh-grid" id="mhGrid">
+          <button class="mh-btn" data-mh="浜田山">🏠<br>浜田山</button>
+          <button class="mh-btn" data-mh="武蔵野">🏡<br>武蔵野</button>
+          <button class="mh-btn" data-mh="どちらでも">🔄<br>どちらでも</button>
+          <button class="mh-btn" data-mh="待機不可">⛔<br>待機不可</button>
+          <button class="mh-btn full" data-mh="休日">🌴 休日</button>
+        </div>
+      </div>
+      <div class="card" id="timeArea" style="display:none">
+        <div class="flabel">⏰ 待機時間</div>
+        <div class="time-row">
+          <select id="timeStart"></select>
+          <span class="time-sep">〜</span>
+          <select id="timeEnd"></select>
+        </div>
+        <div class="flabel">📝 備考</div>
+        <textarea id="noteField" placeholder="例：13:00から打合せのため午前のみ対応可"></textarea>
+      </div>
+      <button class="save-btn" id="saveBtn">✅ 登録する</button>
+    </div>
+
+    <!-- 一覧 -->
+    <div class="divider"><span class="divider-text">📋 シフト一覧</span></div>
+    <div id="viewContent"></div>
+
+    <!-- コピー -->
+    <div class="divider"><span class="divider-text">📤 テキストコピー</span></div>
+    <div class="card">
+      <div class="flabel">📅 日程を選ぶ</div>
+      <div class="date-scroll" id="copyDateTabs"></div>
+      <div class="flabel" style="margin-top:12px">プレビュー</div>
+      <div class="copy-preview" id="copyPreview">日程を選んでください</div>
+      <button class="copy-btn" id="copyBtn">📋 テキストをコピー</button>
+    </div>
+
+    <div style="height:28px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+var PIN="3284";
+var MEMBERS=['関口','吉野','舩田','佐藤','河合','梅田','平川','金本','堀内'];
+var HOLIDAYS=[
+  '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20',
+  '2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21',
+  '2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-23',
+  '2025-11-24','2025-12-31',
+  '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
+  '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
+  '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
+  '2026-10-12','2026-11-03','2026-11-23','2026-12-31'
+];
+var WD=['日','月','火','水','木','金','土'];
+var MH_SEL={浜田山:'sel-h',武蔵野:'sel-m',どちらでも:'sel-b',待機不可:'sel-n',休日:'sel-o'};
+var MH_BADGE={浜田山:'bh',武蔵野:'bm',どちらでも:'bb',待機不可:'bn',休日:'bo'};
+var MH_LABEL={浜田山:'🏠浜田山',武蔵野:'🏡武蔵野',どちらでも:'🔄どちらでも',待機不可:'⛔待機不可',休日:'🌴休日'};
+var db,allData={},selDate=null,selName=null,selMH=null,selCopyDate=null;
+
+function toKey(d){return d.toISOString().slice(0,10);}
+function isHol(d){return HOLIDAYS.indexOf(toKey(d))>=0;}
+function isElig(d){var w=d.getDay();return w===0||w===6||isHol(d);}
+function fmtDate(d){return(d.getMonth()+1)+'/'+(d.getDate())+'('+WD[d.getDay()]+')'+(isHol(d)?'🎌':'');}
+function fmtLong(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日('+WD[d.getDay()]+')'+(isHol(d)?'【祝】':'');}
+
+function get4Dates(){
+  var t=new Date();t.setHours(0,0,0,0);
+  var arr=[],d=new Date(t),n=0;
+  while(arr.length<4&&n<365){if(isElig(d))arr.push(new Date(d));d.setDate(d.getDate()+1);n++;}
+  return arr;
+}
+function getTimes(){
+  var t=[];
+  for(var h=9;h<=18;h++){['00','30'].forEach(function(m){if(!(h===9&&m==='00')&&!(h===18&&m==='30'))t.push((h<10?'0':'')+h+':'+m);});}
+  return t;
+}
+function showToast(msg){
+  var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  setTimeout(function(){el.classList.remove('show');},2200);
+}
+function setSyncing(b){
+  var dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLabel');
+  if(b){dot.classList.add('syncing');lbl.textContent='同期中';}
+  else{dot.classList.remove('syncing');lbl.textContent='同期済';}
+}
+
+document.getElementById('loginBtn').addEventListener('click',checkPin);
+[0,1,2,3].forEach(function(i){
+  var el=document.getElementById('p'+i);
+  el.addEventListener('input',function(){
+    el.value=el.value.replace(/[^0-9]/g,'');
+    if(el.value.length===1&&i<3)document.getElementById('p'+(i+1)).focus();
+    if(i===3&&[0,1,2,3].every(function(j){return document.getElementById('p'+j).value.length===1;}))checkPin();
+  });
+  el.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!el.value&&i>0)document.getElementById('p'+(i-1)).focus();});
+});
+document.getElementById('p0').focus();
+
+function checkPin(){
+  var pin=[0,1,2,3].map(function(i){return document.getElementById('p'+i).value;}).join('');
+  if(pin===PIN){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else {
+    document.getElementById('loginErr').textContent='パスワードが違います';
+    [0,1,2,3].forEach(function(i){document.getElementById('p'+i).value='';});
+    document.getElementById('p0').focus();
+  }
+}
+
+function initApp(){
+  var cfg={
+    apiKey:"AIzaSyB3dGtBKYWnufjq84RagcFh5k7LD_PhW_w",
+    authDomain:"meh-shift2.firebaseapp.com",
+    databaseURL:"https://meh-shift2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:"meh-shift2",
+    storageBucket:"meh-shift2.firebasestorage.app",
+    messagingSenderId:"1144587028",
+    appId:"1:1144587028:web:00999c3d326b007fd8b801"
+  };
+  if(!firebase.apps.length)firebase.initializeApp(cfg);
+  db=firebase.database();
+  buildTimeSel();buildNames();
+  buildDateChips('regDateTabs',function(k){selDate=k;});
+  buildDateChips('copyDateTabs',function(k){
+    selCopyDate=k;
+    document.getElementById('copyPreview').textContent=buildCopy(k);
+  });
+  var d0=get4Dates();
+  if(d0.length){selDate=toKey(d0[0]);selCopyDate=toKey(d0[0]);document.getElementById('copyPreview').textContent=buildCopy(selCopyDate);}
+  document.querySelectorAll('#mhGrid .mh-btn').forEach(function(b){b.addEventListener('click',function(){selMH_fn(b);});});
+  document.getElementById('saveBtn').addEventListener('click',saveEntry);
+  document.getElementById('copyBtn').addEventListener('click',doCopy);
+  db.ref('shifts').on('value',function(snap){
+    allData=snap.val()||{};setSyncing(false);renderView();
+    if(selCopyDate)document.getElementById('copyPreview').textContent=buildCopy(selCopyDate);
+  });
+}
+
+function buildTimeSel(){
+  var ts=getTimes();
+  ['timeStart','timeEnd'].forEach(function(id){
+    var s=document.getElementById(id);
+    ts.forEach(function(t){var o=document.createElement('option');o.value=t;o.textContent=t;s.appendChild(o);});
+  });
+  document.getElementById('timeStart').value='09:30';
+  document.getElementById('timeEnd').value='18:00';
+}
+
+function buildNames(){
+  var g=document.getElementById('nameGrid');
+  MEMBERS.forEach(function(n){
+    var b=document.createElement('button');b.className='name-btn';b.textContent=n;
+    b.addEventListener('click',function(){
+      g.querySelectorAll('.name-btn').forEach(function(x){x.classList.remove('selected');});
+      b.classList.add('selected');selName=n;
+    });
+    g.appendChild(b);
+  });
+}
+
+function buildDateChips(id,cb){
+  var dates=get4Dates(),c=document.getElementById(id);c.innerHTML='';
+  dates.forEach(function(d,i){
+    var b=document.createElement('button');
+    b.className='date-chip'+(i===0?' active':'');b.textContent=fmtDate(d);b.dataset.key=toKey(d);
+    b.addEventListener('click',function(){
+      c.querySelectorAll('.date-chip').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');cb(toKey(d),d);
+    });
+    c.appendChild(b);
+  });
+}
+
+function selMH_fn(btn){
+  document.querySelectorAll('#mhGrid .mh-btn').forEach(function(b){b.className='mh-btn'+(b.classList.contains('full')?' full':'');});
+  var mh=btn.dataset.mh;btn.classList.add(MH_SEL[mh]);selMH=mh;
+  document.getElementById('timeArea').style.display=(mh==='休日'||mh==='待機不可')?'none':'block';
+}
+
+function saveEntry(){
+  if(!selDate){showToast('📅 日程を選んでください');return;}
+  if(!selName){showToast('👤 名前を選んでください');return;}
+  if(!selMH){showToast('🏠 モデルハウスを選んでください');return;}
+  setSyncing(true);
+  var note=document.getElementById('noteField').value.trim();
+  var hasT=selMH!=='休日'&&selMH!=='待機不可';
+  db.ref('shifts/'+selDate+'/'+selName).set({
+    mh:selMH,
+    start:hasT?document.getElementById('timeStart').value:null,
+    end:hasT?document.getElementById('timeEnd').value:null,
+    note:note||null
+  }).then(function(){showToast('✅ 登録しました！');document.getElementById('noteField').value='';});
+}
+
+function deleteEntry(key,name){
+  if(!confirm(name+'さんの登録を削除しますか？'))return;
+  setSyncing(true);
+  db.ref('shifts/'+key+'/'+name).remove().then(function(){showToast('🗑 削除しました');});
+}
+
+function checkGaps(key){
+  var dd=allData[key]||{},ts=getTimes(),gaps=[],i;
+  for(i=0;i<ts.length-1;i++){
+    var s=ts[i],e=ts[i+1];
+    var hOk=MEMBERS.some(function(n){var d=dd[n];return d&&(d.mh==='浜田山'||d.mh==='どちらでも')&&d.start<=s&&d.end>=e;});
+    var mOk=MEMBERS.some(function(n){var d=dd[n];return d&&(d.mh==='武蔵野'||d.mh==='どちらでも')&&d.start<=s&&d.end>=e;});
+    if(!hOk||!mOk){var miss=[];if(!hOk)miss.push('浜田山');if(!mOk)miss.push('武蔵野');gaps.push({s:s,e:e,miss:miss});}
+  }
+  if(!gaps.length)return null;
+  var merged=[],cur=null;
+  for(i=0;i<gaps.length;i++){
+    var g=gaps[i];
+    if(cur&&cur.miss.join()===g.miss.join()&&cur.e===g.s){cur.e=g.e;}
+    else{if(cur)merged.push(cur);cur={s:g.s,e:g.e,miss:g.miss.slice()};}
+  }
+  if(cur)merged.push(cur);return merged;
+}
+
+function renderView(){
+  var dates=get4Dates(),c=document.getElementById('viewContent');c.innerHTML='';
+  dates.forEach(function(d){
+    var key=toKey(d),dd=allData[key]||{};
+    var gaps=checkGaps(key);
+    if(gaps&&gaps.length){
+      var a=document.createElement('div');a.className='alert-box';
+      var txt=gaps.map(function(g){return g.s+'〜'+g.e+'（'+g.miss.join('・')+'が空き）';}).join('　');
+      a.innerHTML='<div class="alert-title">⚠️ '+fmtDate(d)+' 空き時間あり</div>'+txt;
+      c.appendChild(a);
+    }
+    var card=document.createElement('div');card.className='day-card';
+    var reg=MEMBERS.filter(function(n){return !!dd[n];});
+    var unreg=MEMBERS.filter(function(n){return !dd[n];});
+    var h='<div class="day-hdr"><span class="day-hdr-date">'+fmtDate(d)+'</span><span class="day-hdr-count">'+reg.length+' / 9名</span></div><div class="day-body">';
+    reg.forEach(function(name){
+      var e=dd[name];
+      h+='<div class="m-row"><div class="m-name">'+name+'</div><div class="m-info"><span class="m-badge '+MH_BADGE[e.mh]+'">'+MH_LABEL[e.mh]+'</span>'+(e.start?'<div class="m-time">⏰ '+e.start+'〜'+e.end+'</div>':'')+(e.note?'<div class="m-note">📝 '+e.note+'</div>':'')+'</div><button class="del-btn" onclick="deleteEntry(\''+key+'\',\''+name+'\')">✕</button></div>';
+    });
+    if(unreg.length){
+      h+='<div class="unreg-div">未登録 '+unreg.length+'名</div>';
+      unreg.forEach(function(name){h+='<div class="m-row"><div class="m-name" style="color:#b2c9bc;font-weight:500">'+name+'</div><div class="m-info"><span class="m-badge bx">未登録</span></div></div>';});
+    }
+    h+='</div>';card.innerHTML=h;c.appendChild(card);
+  });
+}
+
+function buildCopy(key){
+  var dd=allData[key]||{},d=new Date(key+'T12:00:00');
+  var txt='【モデルハウスシフト】\n'+fmtLong(d)+'\n━━━━━━━━━━━━\n';
+  var hama=MEMBERS.filter(function(n){return dd[n]&&dd[n].mh==='浜田山';});
+  var both=MEMBERS.filter(function(n){return dd[n]&&dd[n].mh==='どちらでも';});
+  var musa=MEMBERS.filter(function(n){return dd[n]&&dd[n].mh==='武蔵野';});
+  txt+='🏠 浜田山\n';
+  if(!hama.length&&!both.length){txt+='  （なし）\n';}
+  else{hama.concat(both).forEach(function(n){var e=dd[n];txt+='  ・'+n+(e.start?' '+e.start+'〜'+e.end:'')+(both.indexOf(n)>=0?' [どちらでも可]':'')+(e.note?'\n   ※'+e.note:'')+'\n';});}
+  txt+='\n🏡 武蔵野\n';
+  if(!musa.length&&!both.length){txt+='  （なし）\n';}
+  else{musa.concat(both).forEach(function(n){var e=dd[n];txt+='  ・'+n+(e.start?' '+e.start+'〜'+e.end:'')+(both.indexOf(n)>=0?' [どちらでも可]':'')+(e.note?'\n   ※'+e.note:'')+'\n';});}
+  var ng=MEMBERS.filter(function(n){return dd[n]&&dd[n].mh==='待機不可';});
+  var off=MEMBERS.filter(function(n){return dd[n]&&dd[n].mh==='休日';});
+  if(ng.length)txt+='\n⛔ 待機不可：'+ng.join('・')+'\n';
+  if(off.length)txt+='🌴 休日：'+off.join('・')+'\n';
+  var noReg=MEMBERS.filter(function(n){return !dd[n];});
+  if(noReg.length)txt+='\n📋 未登録：'+noReg.join('・');
+  return txt;
+}
+
+function doCopy(){
+  var txt=document.getElementById('copyPreview').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){showToast('📋 コピーしました！');}).catch(function(){fbCopy(txt);});}
+  else{fbCopy(txt);}
+}
+function fbCopy(t){
+  var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('📋 コピーしました！');
+}
+</script>
+</body>
+</html>
